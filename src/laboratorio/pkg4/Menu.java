@@ -45,7 +45,7 @@ public class Menu {
                     // *** AJUSTAR SEGUN LAS OPCIONES DEL MENU ***
                     switch (index) {
                         case 0:
-                         
+                         SwingUtilities.invokeLater(() -> new EPSGUI());
                             break;
                         case 1:
                             
