@@ -1,63 +1,57 @@
 package laboratorio.pkg4;
 
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 public class EPSGUI extends JFrame {
     private EPSQueue epsQueue;
     private JLabel lblTurnoActual;
-    private JTextArea areaprioritaria;
-    private JTextArea areanormal;
+    private JTextArea areaPacientesPrioritarios;
+    private JTextArea areaPacientesNormales;
     private Timer timer;
     private Paciente pacienteActual;
-    private int tiemporestante;
-    
-    public EPSGUI(){
+    private int tiempoRestante;
+
+    public EPSGUI() {
         epsQueue = new EPSQueue();
         initComponents();
     }
-    
-    private void initComponents(){
-        setTitle("Asignacion de turnos -EPS");
+
+    private void initComponents() {
+        setTitle("Asignación de Turnos - EPS");
         setLayout(new BorderLayout());
+
+        lblTurnoActual = new JLabel("No hay turnos en curso");
+
+        // Crear las áreas de texto para mostrar las colas de pacientes
+        areaPacientesPrioritarios = new JTextArea(10, 20);
+        areaPacientesPrioritarios.setEditable(false);
+        areaPacientesNormales = new JTextArea(10, 20);
+        areaPacientesNormales.setEditable(false);
         
-        lblTurnoActual =new JLabel("No hay turnos en curso");
+        JScrollPane scrollPrioritarios = new JScrollPane(areaPacientesPrioritarios);
+        JScrollPane scrollNormales = new JScrollPane(areaPacientesNormales);
         
-        areaprioritaria =new JTextArea(10,20);
-        areaprioritaria.setEditable(false);
-        areanormal =new JTextArea(10,20);
-        areanormal.setEditable(false);
-        
-        JScrollPane scrollprioritarios = new JScrollPane(areaprioritaria);
-        JScrollPane scrollnormal = new JScrollPane(areanormal);
-        
-        JPanel panelcolas = new JPanel(new GridLayout(1,2));
-        panelcolas.add(new JLabel("pacientes prioritarios"));
-        panelcolas.add(new JLabel("pacientes normales"));
-        panelcolas.add(scrollprioritarios);
-        panelcolas.add(scrollnormal);
-        
-        JButton btnAgregarpaciente = new JButton("Agregar Paciente");
-        btnAgregarpaciente.addActionListener(new ActionListener() {
+        JPanel panelColas = new JPanel(new GridLayout(1, 2));
+        panelColas.add(new JLabel("Pacientes Prioritarios"));
+        panelColas.add(new JLabel("Pacientes Normales"));
+        panelColas.add(scrollPrioritarios);
+        panelColas.add(scrollNormales);
+
+        JButton btnAgregarPaciente = new JButton("Agregar Paciente");
+        btnAgregarPaciente.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                agregarpaciente();
+                agregarPaciente();
             }
         });
-        
+
         JButton btnExtenderTiempo = new JButton("Extender Tiempo");
         btnExtenderTiempo.addActionListener(new ActionListener() {
             @Override
@@ -65,53 +59,52 @@ public class EPSGUI extends JFrame {
                 extenderTiempo();
             }
         });
-        
-        JPanel panelTurno = new JPanel(new GridLayout(3,1));
+
+        JPanel panelTurno = new JPanel(new GridLayout(3, 1));
         panelTurno.add(lblTurnoActual);
         panelTurno.add(btnExtenderTiempo);
-        
+
         add(panelTurno, BorderLayout.NORTH);
-        add(panelcolas, BorderLayout.CENTER);
-        add(btnAgregarpaciente, BorderLayout.SOUTH);
-        
+        add(panelColas, BorderLayout.CENTER);
+        add(btnAgregarPaciente, BorderLayout.SOUTH);
+
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
-    
-    private void agregarpaciente(){
-        String nombre =JOptionPane.showInputDialog("Nombre y Apellidos:");
+
+    private void agregarPaciente() {
+        String nombre = JOptionPane.showInputDialog("Nombre y Apellidos:");
         int edad = Integer.parseInt(JOptionPane.showInputDialog("Edad:"));
         String afiliacion = JOptionPane.showInputDialog("Afiliación (POS/PC):");
         boolean embarazada = JOptionPane.showConfirmDialog(null, "¿Está embarazada?") == JOptionPane.YES_OPTION;
         boolean limitacionMotriz = JOptionPane.showConfirmDialog(null, "¿Tiene limitación motriz?") == JOptionPane.YES_OPTION;
-    
-        Paciente nuevopaciente = new Paciente(nombre, edad, afiliacion,embarazada,limitacionMotriz);
-        epsQueue.agregarPaciente(nuevopaciente);
-        
+
+        Paciente nuevoPaciente = new Paciente(nombre, edad, afiliacion, embarazada, limitacionMotriz);
+        epsQueue.agregarPaciente(nuevoPaciente);
+
         actualizarListasPacientes();
 
         if (pacienteActual == null) {
             iniciarSimulacion();
+        }
     }
-}
 
-
- void iniciarSimulacion() {
+    private void iniciarSimulacion() {
         if (epsQueue.hayPacientes()) {
             pacienteActual = epsQueue.siguientePaciente();
             lblTurnoActual.setText("Turno en curso: " + pacienteActual.getNombre());
-            tiemporestante = 5;
+            tiempoRestante = 5;
 
             timer = new Timer();
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    tiemporestante--;
-                    if (tiemporestante <= 0) {
+                    tiempoRestante--;
+                    if (tiempoRestante <= 0) {
                         siguienteTurno();
                     } else {
-                        lblTurnoActual.setText("Turno en curso: " + pacienteActual.getNombre() + " - Tiempo restante: " + tiemporestante);
+                        lblTurnoActual.setText("Turno en curso: " + pacienteActual.getNombre() + " - Tiempo restante: " + tiempoRestante);
                     }
                 }
             }, 0, 1000);
@@ -131,34 +124,36 @@ public class EPSGUI extends JFrame {
 
     private void extenderTiempo() {
         if (pacienteActual != null) {
-            tiemporestante += 5;
+            tiempoRestante += 5;
         }
     }
 
     private void actualizarListasPacientes() {
-        areaprioritaria.setText("Pacientes Prioritarios:\n");
-        areanormal.setText("Pacientes Normales:\n");
+        areaPacientesPrioritarios.setText("Pacientes Prioritarios:\n");
+        areaPacientesNormales.setText("Pacientes Normales:\n");
 
         for (Paciente p : epsQueue.getPacientesPrioritarios()) {
-            areaprioritaria.append(p.getNombre() + "\n");
+            areaPacientesPrioritarios.append(p.getNombre() + "\n");
         }
 
         for (Paciente p : epsQueue.getPacientesNormales()) {
-            areanormal.append(p.getNombre() + "\n");
+            areaPacientesNormales.append(p.getNombre() + "\n");
         }
     }
 
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new EPSGUI());
+    }
 }
 
 class EPSQueue {
     private Queue<Paciente> colaNormal;
     private Queue<Paciente> colaPrioritaria;
 
-public EPSQueue() {
-    colaNormal = new LinkedList<>();
-    colaPrioritaria = new LinkedList<>();
+    public EPSQueue() {
+        colaNormal = new LinkedList<>();
+        colaPrioritaria = new LinkedList<>();
     }
-    
 
     public void agregarPaciente(Paciente paciente) {
         if (paciente.tienePrioridad()) {
@@ -172,7 +167,7 @@ public EPSQueue() {
         if (!colaPrioritaria.isEmpty()) {
             return colaPrioritaria.poll();
         }
-        return colaNormal.isEmpty() ? null : colaNormal.poll();
+        return colaNormal.poll();
     }
 
     public boolean hayPacientes() {

@@ -10,8 +10,7 @@ public class Menu {
     public static JButton[] botones;
 
     public static void main(String[] args) {
-        
-        EPSGUI simulacion = new EPSGUI();
+       
         
         // *** AJUSTAR EL TITULO DE LA VENTANA (JFRAME) DEL MENU ***
         String titulo = "Lab04: Estructuras de datos ";
@@ -45,10 +44,12 @@ public class Menu {
                     // *** AJUSTAR SEGUN LAS OPCIONES DEL MENU ***
                     switch (index) {
                         case 0:
-                              simulacion.iniciarSimulacion();
+                              
                             break;
                         case 1:
-                            
+                             SwingUtilities.invokeLater(() -> {
+                                new Parqueadero().setVisible(true);
+                                   });
                             break;
                         case 4:
                             System.exit(0);
